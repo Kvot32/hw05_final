@@ -28,12 +28,20 @@ class Post(models.Model):
         related_name="posts",
     )
     text = models.TextField(verbose_name="Текст поста")
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата публикации")
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата публикации"
+    )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="posts", verbose_name="Автор"
+        User,
+        on_delete=models.CASCADE,
+        related_name="posts",
+        verbose_name="Автор"
     )
 
-    image = models.ImageField("Картинка", upload_to="posts/", blank=True)
+    image = models.ImageField("Картинка",
+                              upload_to="posts/",
+                              blank=True)
 
     class Meta:
         verbose_name = "Пост"
@@ -46,7 +54,10 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(
-        Post, blank=True, null=True, on_delete=models.SET_NULL, related_name="comments"
+        Post, blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="comments"
     )
     author = models.ForeignKey(
         User,
@@ -55,7 +66,9 @@ class Comment(models.Model):
         verbose_name="Комментатор",
     )
     text = models.TextField(verbose_name="Комментарий")
-    created = models.DateTimeField(auto_now_add=True, verbose_name="Дата публикации")
+    created = models.DateTimeField(auto_now_add=True,
+                                   verbose_name="Дата публикации"
+                                   )
 
     class Meta:
         ordering = ["-created"]

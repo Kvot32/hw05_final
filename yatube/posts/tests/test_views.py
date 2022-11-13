@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from http import HTTPStatus
 
 from django import forms
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Comment, Follow, Group, Post
+from ..models import Follow, Group, Post
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -77,13 +76,16 @@ class PostPagesTests(TestCase):
             with self.subTest(reverse_page=reverse_page):
                 response = self.authorized_client.get(reverse_page)
                 self.assertIsInstance(
-                    response.context["form"].fields["text"], forms.fields.CharField
+                    response.context["form"].fields["text"],
+                    forms.fields.CharField
                 )
                 self.assertIsInstance(
-                    response.context["form"].fields["group"], forms.fields.ChoiceField
+                    response.context["form"].fields["group"],
+                    forms.fields.ChoiceField
                 )
                 self.assertIsInstance(
-                    response.context["form"].fields["image"], forms.fields.ImageField
+                    response.context["form"].fields["image"],
+                    forms.fields.ImageField
                 )
 
     def test_index_page_show_correct_context(self):
@@ -102,7 +104,8 @@ class PostPagesTests(TestCase):
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse("posts:profile", kwargs={"username": self.user.username})
+            reverse("posts:profile",
+                    kwargs={"username": self.user.username})
         )
         self.assertEqual(response.context["author"], self.user)
         self.check_post_info(response.context["page_obj"][0])
@@ -110,7 +113,8 @@ class PostPagesTests(TestCase):
     def test_detail_page_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse("posts:post_detail", kwargs={"post_id": self.post.id})
+            reverse("posts:post_detail",
+                    kwargs={"post_id": self.post.id})
         )
         self.check_post_info(response.context["post"])
 
@@ -149,7 +153,10 @@ class TaskPagesTests(TestCase):
             name="small.gif", content=cls.small_gif, content_type="image/gif"
         )
         cls.post = Post.objects.create(
-            author=cls.user, text="Тестовый текст", group=cls.group, image=cls.uploaded
+            author=cls.user,
+            text="Тестовый текст",
+            group=cls.group,
+            image=cls.uploaded
         )
 
     @classmethod
@@ -183,7 +190,8 @@ class TaskPagesTests(TestCase):
     def test_image_in_post_detail_page(self):
         """Картинка передается на страницу post_detail."""
         response = self.guest_client.get(
-            reverse("posts:post_detail", kwargs={"post_id": self.post.id})
+            reverse("posts:post_detail",
+                    kwargs={"post_id": self.post.id})
         )
         obj = response.context["post"]
         self.assertEqual(obj.image, self.post.image)
@@ -191,7 +199,9 @@ class TaskPagesTests(TestCase):
     def test_image_in_page(self):
         """Проверяем что пост с картинкой создается в БД"""
         self.assertTrue(
-            Post.objects.filter(text="Тестовый текст", image="posts/small.gif").exists()
+            Post.objects.filter(text="Тестовый текст",
+                                image="posts/small.gif"
+                                ).exists()
         )
 
 
@@ -221,7 +231,8 @@ class FollowViewsTest(TestCase):
         """Проверка подписки на пользователя."""
         count_follow = Follow.objects.count()
         self.follower_client.post(
-            reverse("posts:profile_follow", kwargs={"username": self.post_follower})
+            reverse("posts:profile_follow",
+                    kwargs={"username": self.post_follower})
         )
         follow = Follow.objects.all().latest("id")
         self.assertEqual(Follow.objects.count(), count_follow + 1)
@@ -230,22 +241,33 @@ class FollowViewsTest(TestCase):
 
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
-        Follow.objects.create(user=self.post_autor, author=self.post_follower)
+        Follow.objects.create(
+            user=self.post_autor,
+            author=self.post_follower
+        )
         count_follow = Follow.objects.count()
         self.follower_client.post(
-            reverse("posts:profile_unfollow", kwargs={"username": self.post_follower})
+            reverse("posts:profile_unfollow",
+                    kwargs={"username": self.post_follower})
         )
         self.assertEqual(Follow.objects.count(), count_follow - 1)
 
     def test_follow_on_authors(self):
         """Проверка записей у тех кто подписан."""
-        post = Post.objects.create(author=self.post_autor, text="Подпишись на меня")
-        Follow.objects.create(user=self.post_follower, author=self.post_autor)
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня"
+        )
+        Follow.objects.create(user=self.post_follower,
+                              author=self.post_autor
+                              )
         response = self.author_client.get(reverse("posts:follow_index"))
         self.assertIn(post, response.context["page_obj"].object_list)
 
     def test_notfollow_on_authors(self):
         """Проверка записей у тех кто не подписан."""
-        post = Post.objects.create(author=self.post_autor, text="Подпишись на меня")
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня")
         response = self.author_client.get(reverse("posts:follow_index"))
         self.assertNotIn(post, response.context["page_obj"].object_list)
