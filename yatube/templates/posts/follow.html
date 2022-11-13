@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load cache %}
+{% cache 20 index_page %}
+  {% load thumbnail %}
+  {% block title %}
+    Подписки пользователей
+  {% endblock %}
+  {% block content %}
+    <div class="container py-5">
+      <h1>Посты авторов на которых вы подписаны</h1>
+        {% include 'includes/switcher.html' %}
+        {% for post in page_obj %}
+            {% include "includes/post_card.html" with post=post %}
+            {% if not forloop.last %}<hr>{% endif %}
+        {% endfor %}
+        {% if page_obj.has_other_pages %}
+        {% include "includes/paginator.html" with page_obj=page_obj paginator=paginator%}
+        {% endif %}
+      </div>
+  {% endblock content %}
+{% endcache %}
