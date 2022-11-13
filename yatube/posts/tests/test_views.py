@@ -249,5 +249,3 @@ class FollowViewsTest(TestCase):
         post = Post.objects.create(author=self.post_autor, text="Подпишись на меня")
         response = self.author_client.get(reverse("posts:follow_index"))
         self.assertNotIn(post, response.context["page_obj"].object_list)
-
-

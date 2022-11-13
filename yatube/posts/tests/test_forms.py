@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post, Comment
+from ..models import Comment, Group, Post
 
 User = get_user_model()
 
@@ -70,10 +70,10 @@ class PostFormTests(TestCase):
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_comment_post (self):
+    def test_comment_post(self):
         """Комментировать посты может только авторизованный пользователь."""
-        comment_count = Comment.objects.count ()
-        self.post = Post.objects.create (
+        comment_count = Comment.objects.count()
+        self.post = Post.objects.create(
             author=PostFormTests.user,
             text="Тестовый пост",
             group=PostFormTests.group,
@@ -81,31 +81,29 @@ class PostFormTests(TestCase):
         comment_data = {
             "text": "Тестовый комментарий",
         }
-        self.authorized_client.post (
-            reverse ("posts:add_comment", kwargs={"post_id": self.post.id}),
-            data=comment_data,
-            follow=True,
-        )
-        new_comment = Comment.objects.get (
-            text=comment_data ["text"]
-        )
-        self.assertEqual (Comment.objects.count (), comment_count + 1)
-        self.assertEqual (new_comment.text, comment_data ['text'])
-
-    def test_comment_client_post (self):
-        """Неавторизованный пользователь не может оставить комментарий."""
-        comment_count = Comment.objects.count ()
-        self.post = Post.objects.create (
-            author=PostFormTests.user,
-            text="Тестовый пост",
-            group=PostFormTests.group,
-        )
-        comment_data = {
-            "text": "Тестовый комментарий",
-        }
-        self.guest_client.post (
+        self.authorized_client.post(
             reverse("posts:add_comment", kwargs={"post_id": self.post.id}),
             data=comment_data,
             follow=True,
         )
-        self.assertEqual (Comment.objects.count (), comment_count)
+        new_comment = Comment.objects.get(text=comment_data["text"])
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
+        self.assertEqual(new_comment.text, comment_data["text"])
+
+    def test_comment_client_post(self):
+        """Неавторизованный пользователь не может оставить комментарий."""
+        comment_count = Comment.objects.count()
+        self.post = Post.objects.create(
+            author=PostFormTests.user,
+            text="Тестовый пост",
+            group=PostFormTests.group,
+        )
+        comment_data = {
+            "text": "Тестовый комментарий",
+        }
+        self.guest_client.post(
+            reverse("posts:add_comment", kwargs={"post_id": self.post.id}),
+            data=comment_data,
+            follow=True,
+        )
+        self.assertEqual(Comment.objects.count(), comment_count)
