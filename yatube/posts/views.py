@@ -88,7 +88,9 @@ def post_edit(request, post_id):
     if request.user != edit_post.author:
         return redirect("posts:post_detail", post_id)
     form = PostForm(
-        request.POST or None, files=request.FILES or None, instance=edit_post
+        request.POST or None,
+        files=request.FILES or None,
+        instance=edit_post
     )
     if form.is_valid():
         form.save()
@@ -137,7 +139,10 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    old = Follow.objects.filter(user=request.user, author=author)
+    old = Follow.objects.filter(
+        user=request.user,
+        author=author
+    )
     if old.exists():
         old.delete()
     return redirect("posts:profile", username=author)
