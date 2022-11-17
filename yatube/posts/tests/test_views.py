@@ -219,8 +219,7 @@ class TaskPagesTests(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 text="Тестовый текст",
-                image="posts/small.gif")
-                .exists()
+                image="posts/small.gif").exists()
         )
 
 
