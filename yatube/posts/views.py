@@ -22,10 +22,9 @@ def _get_page_context(request, queryset):
 @cache_page(20, key_prefix="index_page")
 def index(request):
     posts = Post.objects.select_related("group")
-    post_list = Post.objects.select_related ('author').all()
+    post_list = Post.objects.select_related("author").all()
     page_obj = _get_page_context(request=request, queryset=posts)
-    context = {"page_obj": page_obj,
-               "post_list": post_list}
+    context = {"page_obj": page_obj, "post_list": post_list}
     return render(request, "posts/index.html", context)
 
 
@@ -43,16 +42,14 @@ def profile(request, username):
     posts = Post.objects.select_related("group")
     page_obj = _get_page_context(request=request, queryset=posts)
     followers = Follow.objects.filter(author__username=username).count()
-    context = {"author": author,
-               "page_obj": page_obj,
-               "followers": followers
-               }
+    context = {"author": author, "page_obj": page_obj, "followers": followers}
     if request.user.is_authenticated:
         following = author.following.exists()
-        context.update ({
-            "following": following,
-            "user": request.user,
-        }
+        context.update(
+            {
+                "following": following,
+                "user": request.user,
+            }
         )
     return render(request, "posts/profile.html", context)
 
@@ -140,10 +137,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    old = Follow.objects.filter(
-        user=request.user,
-        author=author
-    )
+    old = Follow.objects.filter(user=request.user, author=author)
     if old.exists():
         old.delete()
     return redirect("posts:profile", username=author)
