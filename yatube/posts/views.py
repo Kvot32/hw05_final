@@ -39,10 +39,14 @@ class GroupList(View):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = Post.objects.select_related("group")
+    posts = author.posts_author.all()
     page_obj = _get_page_context(request=request, queryset=posts)
     followers = Follow.objects.filter(author__username=username).count()
-    context = {"author": author, "page_obj": page_obj, "followers": followers}
+    context = {
+        "author": author,
+        "page_obj": page_obj,
+        "followers": followers
+    }
     if request.user.is_authenticated:
         following = author.following.exists()
         context.update(
