@@ -39,7 +39,7 @@ class GroupList(View):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = author.posts_author.all()
+    posts = author.posts.select_related('author', 'group')
     page_obj = _get_page_context(request=request, queryset=posts)
     followers = Follow.objects.filter(author__username=username).count()
     context = {
