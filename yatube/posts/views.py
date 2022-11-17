@@ -22,8 +22,10 @@ def _get_page_context(request, queryset):
 @cache_page(20, key_prefix="index_page")
 def index(request):
     posts = Post.objects.select_related("group")
+    post_list = Post.objects.select_related ('author').all()
     page_obj = _get_page_context(request=request, queryset=posts)
-    context = {"page_obj": page_obj}
+    context = {"page_obj": page_obj,
+               "post_list": post_list}
     return render(request, "posts/index.html", context)
 
 
@@ -38,10 +40,20 @@ class GroupList(View):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=author)
+    posts = Post.objects.select_related("group")
     page_obj = _get_page_context(request=request, queryset=posts)
-    following = Follow.objects.filter(author=author)
-    context = {"author": author, "page_obj": page_obj, "following": following}
+    followers = Follow.objects.filter(author__username=username).count()
+    context = {"author": author,
+               "page_obj": page_obj,
+               "followers": followers
+               }
+    if request.user.is_authenticated:
+        following = author.following.exists()
+        context.update ({
+            "following": following,
+            "user": request.user,
+        }
+        )
     return render(request, "posts/profile.html", context)
 
 
@@ -49,11 +61,9 @@ def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     form = CommentForm()
     comments = post.comments.all()
-    posts_count = Post.objects.filter(author=post.author).count()
     template = "posts/post_detail.html"
     context = {
         "post": post,
-        "posts_count": posts_count,
         "requser": request.user,
         "form": form,
         "comments": comments,
@@ -130,5 +140,10 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=request.user, author=author).delete()
+    old = Follow.objects.filter(
+        user=request.user,
+        author=author
+    )
+    if old.exists():
+        old.delete()
     return redirect("posts:profile", username=author)

@@ -4,6 +4,7 @@
 {% load static %}
 {% block title %} Пост {{ post|truncatechars:30 }}{% endblock %}
 {% block content %}
+<div class="container py-5">
 <aside class="col-12 col-md-3">
   <ul class="list-group list-group-flush">
     <ul class="list-group-item">
@@ -37,7 +38,9 @@
   {% thumbnail post.image "933x300" crop="center" upscale=True as im %}
     <img class="card-img my-2" src="{{ im.url }}">
   {% endthumbnail %}
-  <p>{{ post.text }}</p>
+  <p>
+    {{ post.text|linebreaks  }}
+  </p>
   {% if post.author == requser %}
   <a class="btn btn-primary" href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>
   {% endif %}
@@ -66,10 +69,10 @@
         </a>
       </h5>
       <p>
-        {{ comment.text }}
+        {{ comment.text|linebreaks  }}
       </p>
     </div>
   </div>
-</article
 {% endfor %}
+</div>
 {% endblock %}

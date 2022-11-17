@@ -5,8 +5,11 @@
 {% load cache %}
 {% block content %}
 {% cache 20 index_page %}
-<div class="container py-5">
+<div class="container py-5" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
   <article>
+    <h1>
+      Последние обновления на этом сайте
+    </h1>
     {% include 'includes/switcher.html' %}
     {% for post in page_obj %}
       <li style="list-group-item">
