@@ -76,13 +76,16 @@ class PostPagesTests(TestCase):
             with self.subTest(reverse_page=reverse_page):
                 response = self.authorized_client.get(reverse_page)
                 self.assertIsInstance(
-                    response.context["form"].fields["text"], forms.fields.CharField
+                    response.context["form"].fields["text"],
+                    forms.fields.CharField
                 )
                 self.assertIsInstance(
-                    response.context["form"].fields["group"], forms.fields.ChoiceField
+                    response.context["form"].fields["group"],
+                    forms.fields.ChoiceField
                 )
                 self.assertIsInstance(
-                    response.context["form"].fields["image"], forms.fields.ImageField
+                    response.context["form"].fields["image"],
+                    forms.fields.ImageField
                 )
 
     def test_index_page_show_correct_context(self):
@@ -93,7 +96,9 @@ class PostPagesTests(TestCase):
     def test_groups_page_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse("posts:group_list", kwargs={"slug": self.group.slug})
+            reverse("posts:group_list",
+                    kwargs={"slug": self.group.slug})
+
         )
         self.assertEqual(response.context["group"], self.group)
         self.check_post_info(response.context["page_obj"][0])
@@ -101,7 +106,9 @@ class PostPagesTests(TestCase):
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse("posts:profile", kwargs={"username": self.user.username})
+            reverse("posts:profile",
+                    kwargs={"username": self.user.username}
+                    )
         )
         self.assertEqual(response.context["author"], self.user)
         self.check_post_info(response.context["page_obj"][0])
@@ -109,7 +116,9 @@ class PostPagesTests(TestCase):
     def test_detail_page_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse("posts:post_detail", kwargs={"post_id": self.post.id})
+            reverse("posts:post_detail",
+                    kwargs={"post_id": self.post.id}
+                    )
         )
         self.check_post_info(response.context["post"])
 
@@ -130,7 +139,9 @@ class TaskPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super(TaskPagesTests, cls).setUpClass()
-        cls.user = User.objects.create_user(username="HasNoName")
+        cls.user = User.objects.create_user(
+            username="HasNoName"
+        )
         cls.group = Group.objects.create(
             title="Test group",
             slug="test_group_slug",
@@ -148,13 +159,17 @@ class TaskPagesTests(TestCase):
             name="small.gif", content=cls.small_gif, content_type="image/gif"
         )
         cls.post = Post.objects.create(
-            author=cls.user, text="Тестовый текст", group=cls.group, image=cls.uploaded
+            author=cls.user,
+            text="Тестовый текст",
+            group=cls.group,
+            image=cls.uploaded
         )
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        shutil.rmtree(TEMP_MEDIA_ROOT,
+                      ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()
@@ -162,7 +177,9 @@ class TaskPagesTests(TestCase):
     def test_image_in_group_list_page(self):
         """Картинка передается на страницу group_list."""
         response = self.guest_client.get(
-            reverse("posts:group_list", kwargs={"slug": self.group.slug}),
+            reverse("posts:group_list",
+                    kwargs={"slug": self.group.slug}
+                    ),
         )
         obj = response.context["page_obj"][0]
         self.assertEqual(obj.image, self.post.image)
@@ -171,7 +188,9 @@ class TaskPagesTests(TestCase):
         """Картинка передается на страницу index_and_profile."""
         templates = (
             reverse("posts:index"),
-            reverse("posts:profile", kwargs={"username": self.post.author}),
+            reverse("posts:profile",
+                    kwargs={"username": self.post.author}
+                    ),
         )
         for url in templates:
             with self.subTest(url):
@@ -182,7 +201,9 @@ class TaskPagesTests(TestCase):
     def test_image_in_post_detail_page(self):
         """Картинка передается на страницу post_detail."""
         response = self.guest_client.get(
-            reverse("posts:post_detail", kwargs={"post_id": self.post.id})
+            reverse("posts:post_detail",
+                    kwargs={"post_id": self.post.id}
+                    )
         )
         obj = response.context["post"]
         self.assertEqual(obj.image, self.post.image)
@@ -190,7 +211,10 @@ class TaskPagesTests(TestCase):
     def test_image_in_page(self):
         """Проверяем что пост с картинкой создается в БД"""
         self.assertTrue(
-            Post.objects.filter(text="Тестовый текст", image="posts/small.gif").exists()
+            Post.objects.filter(
+                text="Тестовый текст",
+                image="posts/small.gif")
+                .exists()
         )
 
 
@@ -220,31 +244,54 @@ class FollowViewsTest(TestCase):
         """Проверка подписки на пользователя."""
         count_follow = Follow.objects.count()
         self.follower_client.post(
-            reverse("posts:profile_follow", kwargs={"username": self.post_follower})
+            reverse("posts:profile_follow",
+                    kwargs={"username": self.post_follower}
+                    )
         )
         follow = Follow.objects.all().latest("id")
-        self.assertEqual(Follow.objects.count(), count_follow + 1)
-        self.assertEqual(follow.author_id, self.post_follower.id)
-        self.assertEqual(follow.user_id, self.post_autor.id)
+        self.assertEqual(Follow.objects.count(),
+                         count_follow + 1
+                         )
+        self.assertEqual(follow.author_id,
+                         self.post_follower.id
+                         )
+        self.assertEqual(follow.user_id,
+                         self.post_autor.id
+                         )
 
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
-        Follow.objects.create(user=self.post_autor, author=self.post_follower)
+        Follow.objects.create(user=self.post_autor,
+                              author=self.post_follower)
         count_follow = Follow.objects.count()
         self.follower_client.post(
-            reverse("posts:profile_unfollow", kwargs={"username": self.post_follower})
+            reverse("posts:profile_unfollow",
+                    kwargs={"username": self.post_follower})
         )
         self.assertEqual(Follow.objects.count(), count_follow - 1)
 
     def test_follow_on_authors(self):
         """Проверка записей у тех кто подписан."""
-        post = Post.objects.create(author=self.post_autor, text="Подпишись на меня")
-        Follow.objects.create(user=self.post_follower, author=self.post_autor)
-        response = self.author_client.get(reverse("posts:follow_index"))
-        self.assertIn(post, response.context["page_obj"].object_list)
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня"
+        )
+        Follow.objects.create(
+            user=self.post_follower,
+            author=self.post_autor
+        )
+        response = self.author_client.get(
+            reverse("posts:follow_index")
+        )
+        self.assertIn(post,
+                      response.context["page_obj"].object_list)
 
     def test_notfollow_on_authors(self):
         """Проверка записей у тех кто не подписан."""
-        post = Post.objects.create(author=self.post_autor, text="Подпишись на меня")
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня"
+        )
         response = self.author_client.get(reverse("posts:follow_index"))
-        self.assertNotIn(post, response.context["page_obj"].object_list)
+        self.assertNotIn(post,
+                         response.context["page_obj"].object_list)
